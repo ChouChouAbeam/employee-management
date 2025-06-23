@@ -10,7 +10,7 @@ GET {{baseUrl}}/Roles
 ### Get all departments  
 GET {{baseUrl}}/Departments
 
-### Create new employee - Developer hired May 18, 2022
+### Create new employee - Senior hired May 18, 2022
 POST {{baseUrl}}/Employees
 Content-Type: application/json
 
@@ -36,7 +36,7 @@ Content-Type: application/json
   "department_ID": "65960058-17ee-4956-967a-9bd093b21f93"
 }
 
-### Create new employee - Fresher hired December 1, 2024
+### Create new employee - Junior hired December 1, 2024
 POST {{baseUrl}}/Employees
 Content-Type: application/json
 

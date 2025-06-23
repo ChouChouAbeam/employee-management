@@ -4,7 +4,7 @@ namespace my.company;
 @readonly
 entity Roles : cuid {
     name: String;
-    baseSalary: Int32;
+    baseSalary: Decimal(10,2);
 }
 
 @readonly
@@ -17,7 +17,7 @@ entity Employees : cuid {
     lastName: String;
     email: String;
     hireDate: Date;
-    salary: Int32;
+    salary: Decimal(10,2);
     role: Association to Roles;
     department: Association to Departments;
 }
