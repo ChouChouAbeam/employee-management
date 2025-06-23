@@ -1,6 +1,76 @@
-<mvc:View controllerName="client.controller.ListView"
+<mvc:View
+    controllerName="client.controller.ListView"
     xmlns:mvc="sap.ui.core.mvc"
-    xmlns="sap.m">
-    <Page id="page" title="{i18n>title}">
-    </Page>
+    xmlns="sap.m"
+>
+    <ScrollContainer
+        id="employeeListScrollContainer"
+        vertical="true"
+        height="100%"
+    >
+        <VBox class="sapUiSmallMargin">
+            <Panel
+                headerText="Employee List"
+                class="sapUiResponsiveMargin"
+                width="auto"
+            >
+                <content>
+                    <Table
+                        id="employeeTable"
+                        growing="true"
+                        growingThreshold="20"
+                        class="sapUiResponsiveMargin"
+                        width="auto"
+                        items="{
+                            path: '/Employees',
+                            parameters: {
+                                $expand: 'department'
+                            }
+                        }"
+                    >
+                        <columns>
+                            <Column>
+                                <Text text="Department" />
+                            </Column>
+                            <Column>
+                                <Text text="Name" />
+                            </Column>
+                            <Column>
+                                <Text text="Email" />
+                            </Column>
+                            <Column>
+                                <Text text="Role" />
+                            </Column>
+                            <Column>
+                                <Text text="Salary" />
+                            </Column>
+                            <Column>
+                                <Text text="Working from" />
+                            </Column>
+                            <Column />
+                        </columns>
+                        <items>
+                            <ColumnListItem>
+                                <cells>
+                                    <Text text="{department/name}" />
+                                    <Text text="{firstName} {lastName}" />
+                                    <Text text="{email}" />
+                                    <Text text="{role/name}" />
+                                    <Text text="{path: 'salary', formatter: '.formatter.salaryText'}" />
+                                    <Text text="{hireDate}" />
+                                    <HBox>
+                                        <Button
+                                            icon="sap-icon://open-command-field"
+                                            type="Transparent"
+                                            press="onEditEmployee"
+                                        />
+                                    </HBox>
+                                </cells>
+                            </ColumnListItem>
+                        </items>
+                    </Table>
+                </content>
+            </Panel>
+        </VBox>
+    </ScrollContainer>
 </mvc:View>
