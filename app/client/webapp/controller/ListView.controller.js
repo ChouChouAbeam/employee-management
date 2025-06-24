@@ -5,8 +5,9 @@ sap.ui.define([
     "sap/ui/model/FilterOperator",
     "sap/m/MessageBox",
     "sap/m/MessageToast",
-    "../model/formatter"
-], (Controller, JSONModel, Filter, FilterOperator, MessageBox, MessageToast, formatter) => {
+    "../model/formatter",
+    "client/model/models"
+], (Controller, JSONModel, Filter, FilterOperator, MessageBox, MessageToast, formatter, model) => {
     "use strict";
 
     return Controller.extend("client.controller.ListView", {
@@ -16,6 +17,9 @@ sap.ui.define([
             this._loadRolesAndDepartments();
             var oRouter = sap.ui.core.UIComponent.getRouterFor(this);
             oRouter.getRoute("RouteListView").attachPatternMatched(this._refreshEmployeeData, this);
+            // Set the user info model
+            const oUserInfoModel = model.createUserInfoModel(this.getOwnerComponent());
+            this.getView().setModel(oUserInfoModel, "userInfo");
         },
 
         _refreshEmployeeData() {
