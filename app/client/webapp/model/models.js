@@ -32,6 +32,7 @@ sap.ui.define([
                 }).catch((oError) => {
                     console.error("Error fetching user info:", oError);
                 });
+                console.log("User info fetched successfully:", oJSONModel);
                 return oJSONModel;
             }
         };

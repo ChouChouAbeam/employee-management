@@ -170,17 +170,42 @@ sap.ui.define([
             if (sEmployeeId && sEmployeeId !== "new") {
                 this._loadEmployeeData(sEmployeeId);
             } else {
-                this._createEmpModel();
+                // For new employee, ensure departments are loaded first
+                const oSelectModel = this.getView().getModel("select");
+                if (oSelectModel && oSelectModel.getProperty("/departments")) {
+                    // Departments already loaded
+                    this._createEmpModel();
+                } else {
+                    // Wait for departments to be loaded, then create model
+                    // The _loadRolesAndDepartments in onInit will handle setting default department
+                    this._createEmpModel();
+                }
             }
         },
 
         _createEmpModel(oEmployeeData = null) {
+            // Get default department and role from select model if available
+            const oSelectModel = this.getView().getModel("select");
+            let sDefaultDepartmentID = "";
+            let sDefaultRoleID = "";
+            if (oSelectModel) {
+                const aDepartments = oSelectModel.getProperty("/departments");
+                if (aDepartments && aDepartments.length > 0) {
+                    sDefaultDepartmentID = aDepartments[0].key;
+                }
+                
+                const aRoles = oSelectModel.getProperty("/roles");
+                if (aRoles && aRoles.length > 0) {
+                    sDefaultRoleID = aRoles[0].key;
+                }
+            }
+
             var oDefaultData = {
                 firstName: "",
                 lastName: "",
                 email: "",
-                department_ID: "",
-                role_ID: "",
+                department_ID: sDefaultDepartmentID,
+                role_ID: sDefaultRoleID,
                 salary: 0,
                 hireDate: "",
                 isEditMode: false
@@ -193,8 +218,8 @@ sap.ui.define([
                     firstName: oEmployeeData.firstName || "",
                     lastName: oEmployeeData.lastName || "",
                     email: oEmployeeData.email || "",
-                    department_ID: oEmployeeData.department_ID || "",
-                    role_ID: oEmployeeData.role_ID || "",
+                    department_ID: oEmployeeData.department_ID || sDefaultDepartmentID,
+                    role_ID: oEmployeeData.role_ID || sDefaultRoleID,
                     salary: oEmployeeData.salary || 0,
                     hireDate: oEmployeeData.hireDate || "",
                     isEditMode: true
@@ -246,6 +271,15 @@ sap.ui.define([
                 });
 
                 oSearchModel.setProperty("/roles", allRoles);
+                
+                // Set default role if employee model exists and role_ID is empty
+                const oEmployeeModel = this.getView().getModel("employee");
+                if (oEmployeeModel && allRoles.length > 0) {
+                    const sCurrentRoleID = oEmployeeModel.getProperty("/role_ID");
+                    if (!sCurrentRoleID) {
+                        oEmployeeModel.setProperty("/role_ID", allRoles[0].key);
+                    }
+                }
             }).catch((oError) => {
                 console.error("Error loading roles:", oError);
             });
@@ -263,6 +297,15 @@ sap.ui.define([
                 });
 
                 oSearchModel.setProperty("/departments", allDepartments);
+                
+                // Set default department if employee model exists and department_ID is empty
+                const oEmployeeModel = this.getView().getModel("employee");
+                if (oEmployeeModel && allDepartments.length > 0) {
+                    const sCurrentDepartmentID = oEmployeeModel.getProperty("/department_ID");
+                    if (!sCurrentDepartmentID) {
+                        oEmployeeModel.setProperty("/department_ID", allDepartments[0].key);
+                    }
+                }
             }).catch((oError) => {
                 console.error("Error loading departments:", oError);
             });
