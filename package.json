@@ -25,6 +25,25 @@
     "requires": {
       "[hybrid]": {
         "db": "hana"
+      },
+      "auth": {
+        "kind": "basic",
+        "users": {
+          "admin": {
+            "roles": [
+              "admin"
+            ]
+          },
+          "viewer": {
+            "roles": [
+              "viewer"
+            ],
+            "attr": {
+              "email": "john.doe@company.com"
+            }
+          },
+          "*": false
+        }
       }
     }
   }

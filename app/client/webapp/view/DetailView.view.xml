@@ -27,6 +27,7 @@
                             value="{employee>/firstName}"
                             placeholder="{i18n>firstNameInput}"
                             class="sapUiSmallMarginBottom"
+                            editable="{= ${userInfo>/user/roles/admin} === 1 }"
                         />
                         
                         <Label text="{i18n>lastName}:" />
@@ -35,6 +36,7 @@
                             value="{employee>/lastName}"
                             placeholder="{i18n>lastNameInput}"
                             class="sapUiSmallMarginBottom"
+                            editable="{= ${userInfo>/user/roles/admin} === 1 }"
                         />
                         
                         <Label text="{i18n>email}:" />
@@ -47,6 +49,7 @@
                             valueState="{form>/validation/emailState}"
                             valueStateText="{form>/validation/emailStateText}"
                             liveChange="onEmailLiveChange"
+                            editable="{= ${userInfo>/user/roles/admin} === 1 }"
                         />
                         
                         <Label text="{i18n>department}:" />
@@ -55,6 +58,7 @@
                             selectedKey="{employee>/department_ID}"
                             items="{select>/departments}"
                             class="sapUiSmallMarginBottom"
+                            editable="{= ${userInfo>/user/roles/admin} === 1 }"
                         >
                             <core:Item
                                 key="{select>key}"
@@ -68,6 +72,7 @@
                             selectedKey="{employee>/role_ID}"
                             items="{select>/roles}"
                             class="sapUiSmallMarginBottom"
+                            editable="{= ${userInfo>/user/roles/admin} === 1 }"
                         >
                             <core:Item
                                 key="{select>key}"
@@ -89,17 +94,19 @@
                             id="hireDatePicker"
                             value="{employee>/hireDate}"
                             class="sapUiSmallMarginBottom"
+                            editable="{= ${userInfo>/user/roles/admin} === 1 }"
                         />
                         
                         <HBox class="sapUiMediumMarginTop">
                             <Button
-                                text="{i18n>Save}"
+                                text="{i18n>saveButton}"
                                 type="Emphasized"
                                 press="onSave"
                                 class="sapUiSmallMarginEnd"
+                                visible="{= ${userInfo>/user/roles/admin} === 1 }"
                             />
                             <Button
-                                text="{i18n>Cancel}"
+                                text="{i18n>cancelButton}"
                                 press="onCancel"
                             />
                         </HBox>

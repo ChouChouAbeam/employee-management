@@ -35,7 +35,7 @@
                     >
                         <headerToolbar>
                             <Toolbar>
-                                <Label text="Department" />
+                                <Label text="{i18n>department}" />
                                 <Select
                                     id="departmentSearch"
                                     selectedKey="{search>/filters/department}"
@@ -47,7 +47,7 @@
                                         text="{search>text}"
                                     />
                                 </Select>
-                                <Label text="Role" />
+                                <Label text="{i18n>role}" />
                                 <Select
                                     id="roleSearch"
                                     selectedKey="{search>/filters/role}"
@@ -105,6 +105,7 @@
                                             tooltip="{i18n>deleteButton}"
                                             type="Reject"
                                             press="onDeleteEmployee"
+                                            visible="{= ${userInfo>/user/roles/admin} === 1 }"
                                         />
                                     </HBox>
                                 </cells>

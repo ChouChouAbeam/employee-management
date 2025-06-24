@@ -2,8 +2,9 @@ sap.ui.define([
     "sap/ui/core/mvc/Controller",
     "sap/ui/model/json/JSONModel",
     "sap/m/MessageToast",
-    "sap/m/MessageBox"
-], (Controller, JSONModel, MessageToast, MessageBox) => {
+    "sap/m/MessageBox",
+    "client/model/models"
+], (Controller, JSONModel, MessageToast, MessageBox, model) => {
     "use strict";
 
     return Controller.extend("client.controller.DetailView", {
@@ -12,7 +13,9 @@ sap.ui.define([
             const oRouter = this.getOwnerComponent().getRouter();
             const oRoute = oRouter.getRoute("RouteDetailView");
             oRoute.attachPatternMatched(this._onRouteMatched, this);
-
+            // Set the user info model
+            const oUserInfoModel = model.createUserInfoModel(this.getOwnerComponent());
+            this.getView().setModel(oUserInfoModel, "userInfo");
             this._loadRolesAndDepartments();
         },
 

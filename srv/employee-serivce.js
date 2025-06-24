@@ -5,6 +5,13 @@ module.exports = class EmployeeService extends cds.ApplicationService {
     // Bonus amount per year of service
     const bonusPerYear = 1000;
 
+    // Add user info endpoint
+    this.on('getUserInfo', async (req) => {
+      return {
+        user: req.user,
+      };
+    });
+
     // Salary Calculation before create or update
     this.before(['CREATE', 'UPDATE'], 'Employees', async (req) => {
       const data = req.data;
