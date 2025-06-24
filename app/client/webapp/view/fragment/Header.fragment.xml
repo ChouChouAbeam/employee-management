@@ -10,7 +10,7 @@
         <Image
             id="sapLogo"
             src="./images/logo.jpg"
-            press="handleAddPress"
+            press="handleEmpPress"
             decorative="false"
             tooltip="Company Logo"
             width="35px"

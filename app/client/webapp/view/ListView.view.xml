@@ -96,8 +96,15 @@
                                     <HBox>
                                         <Button
                                             icon="sap-icon://open-command-field"
+                                            tooltip="{i18n>editButton}"
                                             type="Transparent"
                                             press="onEditEmployee"
+                                        />
+                                        <Button
+                                            icon="sap-icon://delete"
+                                            tooltip="{i18n>deleteButton}"
+                                            type="Reject"
+                                            press="onDeleteEmployee"
                                         />
                                     </HBox>
                                 </cells>

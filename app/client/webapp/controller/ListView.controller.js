@@ -3,8 +3,10 @@ sap.ui.define([
     "sap/ui/model/json/JSONModel",
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
+    "sap/m/MessageBox",
+    "sap/m/MessageToast",
     "../model/formatter"
-], (Controller, JSONModel, Filter, FilterOperator, formatter) => {
+], (Controller, JSONModel, Filter, FilterOperator, MessageBox, MessageToast, formatter) => {
     "use strict";
 
     return Controller.extend("client.controller.ListView", {
@@ -12,6 +14,23 @@ sap.ui.define([
 
         onInit() {
             this._loadRolesAndDepartments();
+            var oRouter = sap.ui.core.UIComponent.getRouterFor(this);
+            oRouter.getRoute("RouteListView").attachPatternMatched(this._refreshEmployeeData, this);
+        },
+
+        _refreshEmployeeData() {
+            // Refresh employee table data
+            const oTable = this.byId("employeeTable");
+            if (oTable) {
+                const oBinding = oTable.getBinding("items");
+                if (oBinding) {
+                    oBinding.refresh();
+                } else {
+                    console.log("No binding found for employee table");
+                }
+            } else {
+                console.log("Employee table not found");
+            }
         },
 
         _loadRolesAndDepartments() {
@@ -91,7 +110,68 @@ sap.ui.define([
 
         },
 
-        onEditEmployee() { }
+        handleAddPress() {
+            // Navigate to DetailView với parameter "new"
+            const oRouter = this.getOwnerComponent().getRouter();
+            oRouter.navTo("RouteDetailView", {
+                employeeId: "new"
+            });
+        },
 
+        handleEmpPress() {
+            // Navigate to ListView
+            const oRouter = this.getOwnerComponent().getRouter();
+            oRouter.navTo("RouteListView");
+        },
+
+        onEditEmployee(oEvent) {
+            // Get selected employee data
+            const oContext = oEvent.getSource().getBindingContext();
+            const oEmployeeData = oContext.getObject();
+
+            // Navigate to DetailView with employee data
+            const oRouter = this.getOwnerComponent().getRouter();
+            oRouter.navTo("RouteDetailView", {
+                employeeId: oEmployeeData.ID
+            });
+        },
+
+        onDeleteEmployee(oEvent) {
+            // Get selected employee data
+            const oContext = oEvent.getSource().getBindingContext();
+            const oEmployeeData = oContext.getObject();
+            const oResourceBundle = this.getView().getModel("i18n").getResourceBundle();
+
+            // Confirm deletion dialog
+            MessageBox.confirm(
+                oResourceBundle.getText("confirmDeleteMessage", [oEmployeeData.firstName, oEmployeeData.lastName]),
+                {
+                    title: oResourceBundle.getText("confirmDeleteTitle"),
+                    onClose: (oAction) => {
+                        if (oAction === MessageBox.Action.OK) {
+                            this._deleteEmployee(oContext, oEmployeeData);
+                        }
+                    }
+                }
+            );
+        },
+
+        _deleteEmployee(oContext, oEmployeeData) {
+            const oResourceBundle = this.getView().getModel("i18n").getResourceBundle();
+            
+            try {
+                // OData V4 delete using context
+                oContext.delete().then(() => {
+                    MessageToast.show(oResourceBundle.getText("employeeDeletedMessage", [oEmployeeData.firstName, oEmployeeData.lastName]));
+
+                    // Refresh the table data
+                    this._refreshEmployeeData();
+
+                })
+            } catch (oError) {
+                MessageToast.show(oResourceBundle.getText("errorDeletingMessage"));
+                console.error("Error deleting employee:", oError);
+            }
+        }
     });
 });
