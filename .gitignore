@@ -17,6 +17,12 @@ target/
 *_mta_build_tmp
 *.mtar
 mta_archives/
+.employee-management_mta_build_tmp/
+
+# UI5 Build artifacts
+**/dist/
+**/client.zip
+**/resources/
 
 # Other
 .DS_Store
