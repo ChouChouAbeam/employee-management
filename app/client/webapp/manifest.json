@@ -98,12 +98,23 @@
           "target": [
             "TargetListView"
           ]
+        },
+        {
+          "name": "RouteDetailView",
+          "pattern": "detail/{employeeId}",
+          "target": [
+            "TargetDetailView"
+          ]
         }
       ],
       "targets": {
         "TargetListView": {
           "id": "ListView",
           "name": "ListView"
+        },
+        "TargetDetailView": {
+          "id": "DetailView",
+          "name": "DetailView"
         }
       }
     },
