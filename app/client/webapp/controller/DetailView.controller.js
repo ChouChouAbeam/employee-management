@@ -21,16 +21,53 @@ sap.ui.define([
 
         handleAddPress() {
             // Navigate to DetailView với parameter "new"
+            const oResourceBundle = this.getView().getModel("i18n").getResourceBundle();
             const oRouter = this.getOwnerComponent().getRouter();
-            oRouter.navTo("RouteDetailView", {
-                employeeId: "new"
-            });
+            const oEmployeeModel = this.getView().getModel("userInfo");
+            if (oEmployeeModel && oEmployeeModel.getProperty("/user/roles/admin")) {
+                sap.m.MessageBox.confirm(
+                    oResourceBundle.getText("confirmCancelMessage"),
+                    {
+                        title: oResourceBundle.getText("confirmCancelTitle"),
+                        actions: [sap.m.MessageBox.Action.YES, sap.m.MessageBox.Action.NO],
+                        onClose: (oAction) => {
+                            if (oAction === sap.m.MessageBox.Action.YES) {
+                                oRouter.navTo("RouteDetailView", {
+                                    employeeId: "new"
+                                });
+                            }
+                        }
+                    }
+                );
+            } else {
+                oRouter.navTo("RouteDetailView", {
+                    employeeId: "new"
+                });
+            }
         },
 
         handleEmpPress() {
             // Navigate to ListView 
             const oRouter = this.getOwnerComponent().getRouter();
-            oRouter.navTo("RouteListView");
+            const oResourceBundle = this.getView().getModel("i18n").getResourceBundle();
+            const oEmployeeModel = this.getView().getModel("userInfo");
+            if (oEmployeeModel && oEmployeeModel.getProperty("/user/roles/admin")) {
+                sap.m.MessageBox.confirm(
+                    oResourceBundle.getText("confirmCancelMessage"),
+                    {
+                        title: oResourceBundle.getText("confirmCancelTitle"),
+                        actions: [sap.m.MessageBox.Action.YES, sap.m.MessageBox.Action.NO],
+                        onClose: (oAction) => {
+                            if (oAction === sap.m.MessageBox.Action.YES) {
+                                oRouter.navTo("RouteListView");
+                                this._clearForm();
+                            }
+                        }
+                    }
+                );
+            } else {
+                oRouter.navTo("RouteListView");
+            }
         },
 
         onSave() {
@@ -83,10 +120,10 @@ sap.ui.define([
                     });
 
                     // Submit batch to save changes
-                    return oModel.submitBatch(oModel.getUpdateGroupId());
-                }).then(() => {
+                    const oUpdate = oModel.submitBatch(oModel.getUpdateGroupId());
                     MessageToast.show(oResourceBundle.getText("employeeUpdatedMessage"));
-                    this.handleEmpPress();
+                    this._navigateListView();
+                    return oUpdate;
                 }).catch((oError) => {
                     MessageToast.show(oResourceBundle.getText("errorUpdatingMessage"));
                     console.error("Error updating employee:", oError);
@@ -102,7 +139,7 @@ sap.ui.define([
                     oCreatedContext.created().then(() => {
                         MessageToast.show(oResourceBundle.getText("employeeCreatedMessage"));
                         this._clearForm();
-                        this.handleEmpPress();
+                        this._navigateListView();
                     })
                 } catch (oError) {
                     MessageToast.show(oResourceBundle.getText("errorCreatingMessage"));
@@ -157,13 +194,16 @@ sap.ui.define([
         },
 
         onCancel() {
-            this._clearForm();
-            // Navigate back to list
             this.handleEmpPress();
         },
 
+        _navigateListView() {
+            const oRouter = this.getOwnerComponent().getRouter();
+            oRouter.navTo("RouteListView");
+        },
 
         _onRouteMatched(oEvent) {
+            this._refreshEmailState();
             const oArgs = oEvent.getParameter("arguments");
             const sEmployeeId = oArgs.employeeId;
 
@@ -193,7 +233,7 @@ sap.ui.define([
                 if (aDepartments && aDepartments.length > 0) {
                     sDefaultDepartmentID = aDepartments[0].key;
                 }
-                
+
                 const aRoles = oSelectModel.getProperty("/roles");
                 if (aRoles && aRoles.length > 0) {
                     sDefaultRoleID = aRoles[0].key;
@@ -230,6 +270,15 @@ sap.ui.define([
             oModel.setDefaultBindingMode("TwoWay");
             this.getView().setModel(oModel, "employee");
             return oModel;
+        },
+
+        _refreshEmailState() {
+            const oEmailInput = this.getView().byId("emailInput");
+            if (oEmailInput) {
+                oEmailInput.setValueState(sap.ui.core.ValueState.None);
+                oEmailInput.setValueStateText("");
+            }
+
         },
 
         _loadEmployeeData(sEmployeeId) {
@@ -271,7 +320,7 @@ sap.ui.define([
                 });
 
                 oSearchModel.setProperty("/roles", allRoles);
-                
+
                 // Set default role if employee model exists and role_ID is empty
                 const oEmployeeModel = this.getView().getModel("employee");
                 if (oEmployeeModel && allRoles.length > 0) {
@@ -297,7 +346,7 @@ sap.ui.define([
                 });
 
                 oSearchModel.setProperty("/departments", allDepartments);
-                
+
                 // Set default department if employee model exists and department_ID is empty
                 const oEmployeeModel = this.getView().getModel("employee");
                 if (oEmployeeModel && allDepartments.length > 0) {

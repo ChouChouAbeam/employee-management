@@ -21,26 +21,42 @@
             >
                 <content>
                     <VBox class="sapUiMediumMargin">
-                        <Label text="{i18n>firstName}:" />
-                        <Input 
+                        <HBox>
+                            <Label text="{i18n>firstName}:" />
+                            <Text
+                                text="*"
+                                class="redStar"
+                            />
+                        </HBox>
+                        <Input
                             id="firstNameInput"
                             value="{employee>/firstName}"
                             placeholder="{i18n>firstNameInput}"
                             class="sapUiSmallMarginBottom"
                             editable="{= ${userInfo>/user/roles/admin} === 1 }"
                         />
-                        
-                        <Label text="{i18n>lastName}:" />
-                        <Input 
+                        <HBox>
+                            <Label text="{i18n>lastName}:" />
+                            <Text
+                                text="*"
+                                class="redStar"
+                            />
+                        </HBox>
+                        <Input
                             id="lastNameInput"
                             value="{employee>/lastName}"
                             placeholder="{i18n>lastNameInput}"
                             class="sapUiSmallMarginBottom"
                             editable="{= ${userInfo>/user/roles/admin} === 1 }"
                         />
-                        
-                        <Label text="{i18n>email}:" />
-                        <Input 
+                        <HBox>
+                            <Label text="{i18n>email}:" />
+                            <Text
+                                text="*"
+                                class="redStar"
+                            />
+                        </HBox>
+                        <Input
                             id="emailInput"
                             value="{employee>/email}"
                             placeholder="{i18n>emailInput}"
@@ -51,9 +67,14 @@
                             liveChange="onEmailLiveChange"
                             editable="{= ${userInfo>/user/roles/admin} === 1 }"
                         />
-                        
-                        <Label text="{i18n>department}:" />
-                        <Select 
+                        <HBox>
+                            <Label text="{i18n>department}:" />
+                            <Text
+                                text="*"
+                                class="redStar"
+                            />
+                        </HBox>
+                        <Select
                             id="departmentSelect"
                             selectedKey="{employee>/department_ID}"
                             items="{select>/departments}"
@@ -65,9 +86,14 @@
                                 text="{select>text}"
                             />
                         </Select>
-                        
-                        <Label text="{i18n>role}:" />
-                        <Select 
+                        <HBox>
+                            <Label text="{i18n>role}:" />
+                            <Text
+                                text="*"
+                                class="redStar"
+                            />
+                        </HBox>
+                        <Select
                             id="roleSelect"
                             selectedKey="{employee>/role_ID}"
                             items="{select>/roles}"
@@ -79,24 +105,28 @@
                                 text="{select>text}"
                             />
                         </Select>
-                        
                         <Label text="{i18n>inputSalary}:" />
-                        <Input 
+                        <Input
                             id="salaryInput"
                             value="{employee>/salary}"
                             type="Number"
                             editable="false"
                             class="sapUiSmallMarginBottom"
                         />
-                        
-                        <Label text="{i18n>hireDate}:" />
-                        <DatePicker 
+                        <HBox>
+                            <Label text="{i18n>hireDate}:" />
+                            <Text
+                                text="*"
+                                class="redStar"
+                            />
+                        </HBox>
+                        <DatePicker
                             id="hireDatePicker"
                             value="{employee>/hireDate}"
                             class="sapUiSmallMarginBottom"
                             editable="{= ${userInfo>/user/roles/admin} === 1 }"
                         />
-                        
+
                         <HBox class="sapUiMediumMarginTop">
                             <Button
                                 text="{i18n>saveButton}"

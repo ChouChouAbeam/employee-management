@@ -29,11 +29,11 @@ module.exports = class EmployeeService extends cds.ApplicationService {
           
           // Calculate bonus: $1,000 per year of service
           const bonus = yearsOfService * bonusPerYear;
-          
           // Calculate total salary
-          data.salary = role.baseSalary + bonus;
+          data.salary = parseFloat(role.baseSalary) + bonus;
           
         }
+        req.data = data;
       }
     });
 
