@@ -73,6 +73,8 @@ sap.ui.define([
                 firstName: oEmployeeData.firstName,
                 lastName: oEmployeeData.lastName,
                 email: oEmployeeData.email,
+                dateOfBirth: this._formatDate(oEmployeeData.dateOfBirth),
+                gender: oEmployeeData.gender,
                 department_ID: oEmployeeData.department_ID,
                 role_ID: oEmployeeData.role_ID,
                 salary: parseFloat(oEmployeeData.salary) || 0,
@@ -164,7 +166,7 @@ sap.ui.define([
         _validateForm(oEmployeeData) {
             const oResourceBundle = this.getView().getModel("i18n").getResourceBundle();
 
-            // Basic validation
+            // Basic validation - dateOfBirth and gender are optional
             if (!oEmployeeData.firstName || !oEmployeeData.lastName || !oEmployeeData.email ||
                 !oEmployeeData.department_ID || !oEmployeeData.role_ID || !oEmployeeData.hireDate) {
                 MessageToast.show(oResourceBundle.getText("validationRequiredFields"));
@@ -176,6 +178,16 @@ sap.ui.define([
             if (oEmployeeData.email && !rexMail.test(oEmployeeData.email)) {
                 MessageToast.show(oResourceBundle.getText("validationInvalidEmail"));
                 return false;
+            }
+
+            // Date of birth validation (if provided, should be in the past)
+            if (oEmployeeData.dateOfBirth) {
+                const dobDate = new Date(oEmployeeData.dateOfBirth);
+                const currentDate = new Date();
+                if (dobDate >= currentDate) {
+                    MessageToast.show(oResourceBundle.getText("validationInvalidDateOfBirth") || "Date of birth must be in the past");
+                    return false;
+                }
             }
 
             // All validation passed
@@ -249,6 +261,8 @@ sap.ui.define([
                 firstName: "",
                 lastName: "",
                 email: "",
+                dateOfBirth: "",
+                gender: "",
                 department_ID: sDefaultDepartmentID,
                 role_ID: sDefaultRoleID,
                 salary: 0,
@@ -263,6 +277,8 @@ sap.ui.define([
                     firstName: oEmployeeData.firstName || "",
                     lastName: oEmployeeData.lastName || "",
                     email: oEmployeeData.email || "",
+                    dateOfBirth: oEmployeeData.dateOfBirth || "",
+                    gender: oEmployeeData.gender || "",
                     department_ID: oEmployeeData.department_ID || sDefaultDepartmentID,
                     role_ID: oEmployeeData.role_ID || sDefaultRoleID,
                     salary: oEmployeeData.salary || 0,
@@ -290,6 +306,12 @@ sap.ui.define([
             if (oEmailInput) {
                 oEmailInput.setValueState(sap.ui.core.ValueState.None);
                 oEmailInput.setValueStateText("");
+            }
+
+            const oDateOfBirthPicker = this.getView().byId("dateOfBirthPicker");
+            if (oDateOfBirthPicker) {
+                oDateOfBirthPicker.setValueState(sap.ui.core.ValueState.None);
+                oDateOfBirthPicker.setValueStateText("");
             }
         },
 
@@ -444,6 +466,35 @@ sap.ui.define([
                 // Reset salary on error
                 oEmployeeModel.setProperty("/salary", 0);
             });
+        },
+
+        onDateOfBirthChange(oEvent) {
+            const sValue = oEvent.getParameter("value");
+            const oInput = oEvent.getSource();
+            const oResourceBundle = this.getView().getModel("i18n").getResourceBundle();
+
+            if (sValue === "") {
+                // Empty date is allowed
+                oInput.setValueState("None");
+                oInput.setValueStateText("");
+                return;
+            }
+
+            // Validate that date of birth is in the past
+            const dobDate = new Date(sValue);
+            const currentDate = new Date();
+            
+            if (isNaN(dobDate.getTime())) {
+                oInput.setValueState("Error");
+                oInput.setValueStateText("Invalid date format");
+            } else if (dobDate >= currentDate) {
+                oInput.setValueState("Error");
+                oInput.setValueStateText(oResourceBundle.getText("validationInvalidDateOfBirth"));
+            } else {
+                oInput.setValueState("Success");
+                oInput.setValueStateText("Valid date of birth");
+            }
         }
+
     });
 });

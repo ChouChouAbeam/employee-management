@@ -71,6 +71,28 @@
                             editable="{= ${userInfo>/user/roles/admin} === 1 }"
                         />
                         <HBox>
+                            <Label text="{i18n>dateOfBirth}:" />
+                        </HBox>
+                        <DatePicker
+                            id="dateOfBirthPicker"
+                            value="{employee>/dateOfBirth}"
+                            class="sapUiSmallMarginBottom"
+                            editable="{= ${userInfo>/user/roles/admin} === 1 }"
+                            change="onDateOfBirthChange"
+                        />
+                        <HBox>
+                            <Label text="{i18n>gender}:" />
+                        </HBox>
+                        <Select
+                            id="genderSelect"
+                            selectedKey="{employee>/gender}"
+                            class="sapUiSmallMarginBottom"
+                            editable="{= ${userInfo>/user/roles/admin} === 1 }"
+                        >
+                            <core:Item key="Male" text="{i18n>male}" />
+                            <core:Item key="Female" text="{i18n>female}" />
+                        </Select>
+                        <HBox>
                             <Label text="{i18n>department}:" />
                             <Text
                                 text="*"
