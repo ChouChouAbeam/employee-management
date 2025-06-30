@@ -19,33 +19,6 @@ sap.ui.define([
             this._loadRolesAndDepartments();
         },
 
-        handleAddPress() {
-            // Navigate to DetailView với parameter "new"
-            const oResourceBundle = this.getView().getModel("i18n").getResourceBundle();
-            const oRouter = this.getOwnerComponent().getRouter();
-            const oEmployeeModel = this.getView().getModel("userInfo");
-            if (oEmployeeModel && oEmployeeModel.getProperty("/user/roles/admin")) {
-                sap.m.MessageBox.confirm(
-                    oResourceBundle.getText("confirmCancelMessage"),
-                    {
-                        title: oResourceBundle.getText("confirmCancelTitle"),
-                        actions: [sap.m.MessageBox.Action.YES, sap.m.MessageBox.Action.NO],
-                        onClose: (oAction) => {
-                            if (oAction === sap.m.MessageBox.Action.YES) {
-                                oRouter.navTo("RouteDetailView", {
-                                    employeeId: "new"
-                                });
-                            }
-                        }
-                    }
-                );
-            } else {
-                oRouter.navTo("RouteDetailView", {
-                    employeeId: "new"
-                });
-            }
-        },
-
         handleEmpPress() {
             // Navigate to ListView 
             const oRouter = this.getOwnerComponent().getRouter();
@@ -119,14 +92,14 @@ sap.ui.define([
                         oContext.setProperty(sProperty, oEmployee[sProperty]);
                     });
 
-                    // Submit batch to save changes
-                    const oUpdate = oModel.submitBatch(oModel.getUpdateGroupId());
+                    // Submit batch to save changes and wait for completion
+                    return oModel.submitBatch(oModel.getUpdateGroupId());
+                }).then(() => {
                     MessageToast.show(oResourceBundle.getText("employeeUpdatedMessage"));
-                    this._navigateListView();
-                    return oUpdate;
+                    this._clearForm();
+                    this._navigateListViewWithRefresh();
                 }).catch((oError) => {
                     MessageToast.show(oResourceBundle.getText("errorUpdatingMessage"));
-                    console.error("Error updating employee:", oError);
                 });
             } else {
                 const oListBinding = oModel.bindList("/Employees");
@@ -139,16 +112,17 @@ sap.ui.define([
                     oCreatedContext.created().then(() => {
                         MessageToast.show(oResourceBundle.getText("employeeCreatedMessage"));
                         this._clearForm();
-                        this._navigateListView();
-                    })
+                        this._navigateListViewWithRefresh();
+                    }).catch((oError) => {
+                        MessageToast.show(oResourceBundle.getText("errorCreatingMessage"));
+                    });
                 } catch (oError) {
                     MessageToast.show(oResourceBundle.getText("errorCreatingMessage"));
-                    console.error("Error creating employee:", oError);
                 }
             }
         },
 
-        onEmailLiveChange(oEvent) {
+        onEmailChange(oEvent) {
             const sValue = oEvent.getParameter("value");
             const oInput = oEvent.getSource();
             const oResourceBundle = this.getView().getModel("i18n").getResourceBundle();
@@ -172,6 +146,21 @@ sap.ui.define([
             }
         },
 
+        onHireDateChange(oEvent) {
+            // Calculate and preview salary when hire date changes
+            this._calculateAndPreviewSalary();
+        },
+
+
+        onRoleChange() {
+            // Recalculate salary when role changes
+            this._calculateAndPreviewSalary();
+        },
+
+        onCancel() {
+            this.handleEmpPress();
+        },
+
         _validateForm(oEmployeeData) {
             const oResourceBundle = this.getView().getModel("i18n").getResourceBundle();
 
@@ -193,12 +182,28 @@ sap.ui.define([
             return true;
         },
 
-        onCancel() {
-            this.handleEmpPress();
-        },
-
         _navigateListView() {
             const oRouter = this.getOwnerComponent().getRouter();
+            // Navigate to ListView and trigger data refresh
+            oRouter.navTo("RouteListView");
+
+            // Also refresh the model data to ensure ListView gets updated data
+            setTimeout(() => {
+                const oModel = this.getOwnerComponent().getModel();
+                const oListBinding = oModel.bindList("/Employees");
+                if (oListBinding) {
+                    oListBinding.refresh();
+                }
+            }, 100);
+        },
+
+        _navigateListViewWithRefresh() {
+            const oRouter = this.getOwnerComponent().getRouter();
+            // Fire event to ListView to refresh data
+            const oEventBus = sap.ui.getCore().getEventBus();
+            oEventBus.publish("employee", "dataChanged", {});
+
+            // Navigate to ListView
             oRouter.navTo("RouteListView");
         },
 
@@ -269,6 +274,14 @@ sap.ui.define([
             var oModel = new JSONModel(oModelData);
             oModel.setDefaultBindingMode("TwoWay");
             this.getView().setModel(oModel, "employee");
+
+            // Calculate salary preview after model is set (for both new and edit mode)
+            if (oEmployeeData || (oModelData.role_ID && oModelData.hireDate)) {
+                setTimeout(() => {
+                    this._calculateAndPreviewSalary();
+                }, 200);
+            }
+
             return oModel;
         },
 
@@ -278,7 +291,6 @@ sap.ui.define([
                 oEmailInput.setValueState(sap.ui.core.ValueState.None);
                 oEmailInput.setValueStateText("");
             }
-
         },
 
         _loadEmployeeData(sEmployeeId) {
@@ -295,7 +307,6 @@ sap.ui.define([
             }).catch((oError) => {
                 const oResourceBundle = this.getView().getModel("i18n").getResourceBundle();
                 MessageToast.show(oResourceBundle.getText("errorLoadingEmployee"));
-                console.error("Error loading employee:", oError);
                 this._createEmpModel(); // Fallback to create mode
             });
         },
@@ -327,10 +338,13 @@ sap.ui.define([
                     const sCurrentRoleID = oEmployeeModel.getProperty("/role_ID");
                     if (!sCurrentRoleID) {
                         oEmployeeModel.setProperty("/role_ID", allRoles[0].key);
+                        // Calculate salary for default role if hire date exists
+                        setTimeout(() => {
+                            this._calculateAndPreviewSalary();
+                        }, 100);
                     }
                 }
             }).catch((oError) => {
-                console.error("Error loading roles:", oError);
             });
 
             // OData V4 - Load Departments
@@ -356,7 +370,6 @@ sap.ui.define([
                     }
                 }
             }).catch((oError) => {
-                console.error("Error loading departments:", oError);
             });
         },
 
@@ -373,7 +386,6 @@ sap.ui.define([
                 const oDate = new Date(sDate);
 
                 if (isNaN(oDate.getTime())) {
-                    console.error("Invalid date:", sDate);
                     return "";
                 }
                 const sYear = oDate.getFullYear();
@@ -382,7 +394,6 @@ sap.ui.define([
 
                 return `${sYear}-${sMonth}-${sDay}`;
             } catch (error) {
-                console.error("Error formatting date:", error);
                 return "";
             }
         },
@@ -390,6 +401,49 @@ sap.ui.define([
         _clearForm() {
             // Reset form bằng cách tạo lại model rỗng
             this._createEmpModel();
+        },        _calculateAndPreviewSalary() {
+            const oEmployeeModel = this.getView().getModel("employee");
+            
+            if (!oEmployeeModel) {
+                return;
+            }
+
+            const sRoleID = oEmployeeModel.getProperty("/role_ID");
+            const sHireDate = oEmployeeModel.getProperty("/hireDate");
+
+            if (!sRoleID || !sHireDate) {
+                // Reset salary to 0 if role or hire date is missing
+                oEmployeeModel.setProperty("/salary", 0);
+                return;
+            }
+
+            // Get role data from OData service to get base salary
+            const oModel = this.getOwnerComponent().getModel();
+            const sPath = `/Roles(${sRoleID})`;
+            const oBinding = oModel.bindContext(sPath);
+
+            oBinding.requestObject().then((oRoleData) => {
+                if (oRoleData && oRoleData.baseSalary) {
+                    // Calculate years of service
+                    const hireDate = new Date(sHireDate);
+                    const currentDate = new Date();
+                    const yearsOfService = currentDate.getFullYear() - hireDate.getFullYear();
+                    // Calculate bonus: $1,000 per year of service (matching server logic)
+                    const bonusPerYear = 1000;
+                    const bonus = yearsOfService * bonusPerYear;
+
+                    // Calculate total salary
+                    const baseSalary = parseFloat(oRoleData.baseSalary);
+                    const totalSalary = baseSalary + bonus;
+
+                    // Update the salary in the employee model
+                    oEmployeeModel.setProperty("/salary", totalSalary);
+
+                }
+            }).catch((oError) => {
+                // Reset salary on error
+                oEmployeeModel.setProperty("/salary", 0);
+            });
         }
     });
 });

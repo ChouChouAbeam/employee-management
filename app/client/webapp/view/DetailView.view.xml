@@ -26,6 +26,7 @@
                             <Text
                                 text="*"
                                 class="redStar"
+                                visible="{= ${userInfo>/user/roles/admin} === 1 }"
                             />
                         </HBox>
                         <Input
@@ -40,6 +41,7 @@
                             <Text
                                 text="*"
                                 class="redStar"
+                                visible="{= ${userInfo>/user/roles/admin} === 1 }"
                             />
                         </HBox>
                         <Input
@@ -54,6 +56,7 @@
                             <Text
                                 text="*"
                                 class="redStar"
+                                visible="{= ${userInfo>/user/roles/admin} === 1 }"
                             />
                         </HBox>
                         <Input
@@ -64,7 +67,7 @@
                             class="sapUiSmallMarginBottom"
                             valueState="{form>/validation/emailState}"
                             valueStateText="{form>/validation/emailStateText}"
-                            liveChange="onEmailLiveChange"
+                            change="onEmailChange"
                             editable="{= ${userInfo>/user/roles/admin} === 1 }"
                         />
                         <HBox>
@@ -72,6 +75,7 @@
                             <Text
                                 text="*"
                                 class="redStar"
+                                visible="{= ${userInfo>/user/roles/admin} === 1 }"
                             />
                         </HBox>
                         <Select
@@ -91,6 +95,7 @@
                             <Text
                                 text="*"
                                 class="redStar"
+                                visible="{= ${userInfo>/user/roles/admin} === 1 }"
                             />
                         </HBox>
                         <Select
@@ -99,6 +104,7 @@
                             items="{select>/roles}"
                             class="sapUiSmallMarginBottom"
                             editable="{= ${userInfo>/user/roles/admin} === 1 }"
+                            change="onRoleChange"
                         >
                             <core:Item
                                 key="{select>key}"
@@ -118,6 +124,7 @@
                             <Text
                                 text="*"
                                 class="redStar"
+                                visible="{= ${userInfo>/user/roles/admin} === 1 }"
                             />
                         </HBox>
                         <DatePicker
@@ -125,6 +132,7 @@
                             value="{employee>/hireDate}"
                             class="sapUiSmallMarginBottom"
                             editable="{= ${userInfo>/user/roles/admin} === 1 }"
+                            change="onHireDateChange"
                         />
 
                         <HBox class="sapUiMediumMarginTop">
