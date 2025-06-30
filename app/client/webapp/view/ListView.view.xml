@@ -32,6 +32,8 @@
                                 $expand: 'department'
                             }
                         }"
+                        selectionChange="onRowSelect"
+                        mode="SingleSelectMaster"
                     >
                         <headerToolbar>
                             <Toolbar>

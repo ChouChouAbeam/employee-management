@@ -15,11 +15,24 @@ sap.ui.define([
 
         onInit() {
             this._loadRolesAndDepartments();
-            var oRouter = sap.ui.core.UIComponent.getRouterFor(this);
-            oRouter.getRoute("RouteListView").attachPatternMatched(this._refreshEmployeeData, this);
             // Set the user info model
             const oUserInfoModel = model.createUserInfoModel(this.getOwnerComponent());
             this.getView().setModel(oUserInfoModel, "userInfo");
+
+            // Subscribe to employee data change event
+            const oEventBus = sap.ui.getCore().getEventBus();
+            oEventBus.subscribe("employee", "dataChanged", this._onEmployeeDataChanged, this);
+        },
+
+        onExit() {
+            // Unsubscribe from event bus
+            const oEventBus = sap.ui.getCore().getEventBus();
+            oEventBus.unsubscribe("employee", "dataChanged", this._onEmployeeDataChanged, this);
+        },
+
+        _onEmployeeDataChanged() {
+            // Refresh employee data when notified of changes
+            this._refreshEmployeeData();
         },
 
         _refreshEmployeeData() {
@@ -29,11 +42,7 @@ sap.ui.define([
                 const oBinding = oTable.getBinding("items");
                 if (oBinding) {
                     oBinding.refresh();
-                } else {
-                    console.log("No binding found for employee table");
                 }
-            } else {
-                console.log("Employee table not found");
             }
         },
 
@@ -65,7 +74,6 @@ sap.ui.define([
                 // Cập nhật roles trong search model
                 oSearchModel.setProperty("/roles", allRoles);
             }).catch((oError) => {
-                console.error("Error loading roles:", oError);
             });
 
             // OData V4 - Gọi service để lấy Departments
@@ -85,7 +93,6 @@ sap.ui.define([
                 // Cập nhật departments trong search model
                 oSearchModel.setProperty("/departments", aDepartmentsList);
             }).catch((oError) => {
-                console.error("Error loading departments:", oError);
             });
         },
 
@@ -140,6 +147,18 @@ sap.ui.define([
             });
         },
 
+        onRowSelect(oEvent){
+            var oItem = oEvent.getParameter("listItem");
+            var oContext = oItem.getBindingContext();
+            var oEmployeeData = oContext.getObject();
+
+            // Navigate to DetailView with employee data
+            const oRouter = this.getOwnerComponent().getRouter();
+            oRouter.navTo("RouteDetailView", {
+                employeeId: oEmployeeData.ID
+            });
+        },
+
         onDeleteEmployee(oEvent) {
             // Get selected employee data
             const oContext = oEvent.getSource().getBindingContext();
@@ -168,13 +187,17 @@ sap.ui.define([
                 oContext.delete().then(() => {
                     MessageToast.show(oResourceBundle.getText("employeeDeletedMessage", [oEmployeeData.firstName, oEmployeeData.lastName]));
 
-                    // Refresh the table data
+                    // Refresh the table data immediately after delete
                     this._refreshEmployeeData();
 
-                })
+                    // Also fire event in case other views need to know
+                    const oEventBus = sap.ui.getCore().getEventBus();
+                    oEventBus.publish("employee", "dataChanged", {});
+                }).catch((oError) => {
+                    MessageToast.show(oResourceBundle.getText("errorDeletingMessage"));
+                });
             } catch (oError) {
                 MessageToast.show(oResourceBundle.getText("errorDeletingMessage"));
-                console.error("Error deleting employee:", oError);
             }
         }
     });
