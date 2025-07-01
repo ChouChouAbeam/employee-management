@@ -43,6 +43,33 @@ sap.ui.define([
             }
         },
 
+        handleAddPress() {
+            // Navigate to DetailView với parameter "new"
+            const oResourceBundle = this.getView().getModel("i18n").getResourceBundle();
+            const oRouter = this.getOwnerComponent().getRouter();
+            const oEmployeeModel = this.getView().getModel("userInfo");
+            if (oEmployeeModel && oEmployeeModel.getProperty("/user/roles/admin")) {
+                sap.m.MessageBox.confirm(
+                    oResourceBundle.getText("confirmCancelMessage"),
+                    {
+                        title: oResourceBundle.getText("confirmCancelTitle"),
+                        actions: [sap.m.MessageBox.Action.YES, sap.m.MessageBox.Action.NO],
+                        onClose: (oAction) => {
+                            if (oAction === sap.m.MessageBox.Action.YES) {
+                                oRouter.navTo("RouteDetailView", {
+                                    employeeId: "new"
+                                });
+                            }
+                        }
+                    }
+                );
+            } else {
+                oRouter.navTo("RouteDetailView", {
+                    employeeId: "new"
+                });
+            }
+        },
+
         onSave() {
             // Lấy data từ employee model
             const oEmployeeModel = this.getView().getModel("employee");
